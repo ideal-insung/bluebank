@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bank.core.account.AccountRepository.AccountHistoryDAO">
+    <insert id="saveAccountHistory" parameterType="bank.core.domain.AccountHistory">
+        INSERT INTO account_history (
+            account_number,
+            user_id,
+            transaction_type,
+            amount,
+            balance,
+            transaction_time,
+            target_account_number,
+            description
+        )VALUES (
+            #{account_number},
+            #{user_id},
+            #{transaction_type},
+            #{amount},
+            #{balance},
+            NOW(),
+            null,
+            #{description}
+        );
+
+    </insert>
+    <select id="selectByAccount" resultType="bank.core.domain.AccountHistory" parameterType="map">
+        SELECT *
+          FROM account_history
+         WHERE USER_ID = #{user_id}
+           AND ACCOUNT_NUMBER = #{account_number}
+         ORDER BY transaction_time DESC
+    </select>
+
+    <insert id="addAccountHistory" parameterType="map">
+        INSERT INTO account_history (
+        account_number,
+        user_id,
+        transaction_type,
+        amount,
+        balance,
+        transaction_time,
+        target_account_number,
+        description
+        )
+        VALUES (
+        #{account_number},        <!-- 계좌 번호 -->
+        #{user_id},               <!-- 사용자 ID -->
+        #{type},                  <!-- 거래 유형 -->
+        #{amount},                <!-- 거래 금액 -->
+        #{balance},               <!-- 거래 후 잔액 -->
+        NOW(),                    <!-- 거래 시간 -->
+        #{target_account_number}, <!-- 입금계좌번호 -->
+        #{description}            <!-- 거래 설명 -->
+        );
+    </insert>
+</mapper>

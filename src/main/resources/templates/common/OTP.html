@@ -1,0 +1,21 @@
+<!-- OTP 인증 팝업 -->
+<div id="otpModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" id="closeOtpModal">&times;</span>
+    <h2>OTP 인증</h2>
+    <p>이체를 완료하려면 OTP를 입력하세요.</p>
+
+    <!-- 타이머 표시 -->
+    <div id="timerDisplay">
+      <p id="timer">남은 시간: <span id="time">05:00</span></p>
+    </div>
+
+    <!-- OTP 숫자 표시 -->
+    <div id="otpNumberContainer">
+      <p>발급된 OTP: <span id="otpNumber">******</span></p>
+    </div>
+
+    <input type="text" id="otpInput" maxlength="6" placeholder="OTP 입력" />
+    <button class="button" id="verifyOtpBtn">OTP 인증</button>
+  </div>
+</div>

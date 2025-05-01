@@ -1,0 +1,40 @@
+CREATE TABLE User (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE account (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    account_number VARCHAR(20) NOT NULL UNIQUE,
+    account_name VARCHAR(50) NOT NULL,
+    account_type VARCHAR(20) NOT NULL,
+    account_holder VARCHAR(50) NOT NULL,
+    passbook_issued BOOLEAN DEFAULT FALSE,
+    contact VARCHAR(100),
+    account_password VARCHAR(255) NOT NULL,
+    initial_deposit INT NOT NULL,
+    balance INT NOT NULL DEFAULT 0,
+    auto_transfer BOOLEAN DEFAULT FALSE,
+    notification BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+);
+CREATE TABLE account_history (
+    history_id BIGINT AUTO_INCREMENT PRIMARY KEY,  -- 거래 ID (자동 증가)
+    user_id INT NOT NULL,  -- 사용자 ID 추가
+    account_number VARCHAR(20) NOT NULL,  -- 계좌 번호
+    transaction_type ENUM('DEPOSIT', 'WITHDRAWAL', 'TRANSFER') NOT NULL,  -- 거래 유형
+    amount DECIMAL(15, 2) NOT NULL,  -- 거래 금액
+    balance DECIMAL(15, 2) NOT NULL,  -- 거래 후 잔액
+    transaction_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 거래 일시
+    target_account_number VARCHAR(20),  -- 이체인 경우 상대 계좌 번호
+    description VARCHAR(255),  -- 거래에 대한 상세 설명
+    FOREIGN KEY (account_number) REFERENCES account(account_number),  -- 계좌 테이블과 연결
+    FOREIGN KEY (target_account_number) REFERENCES account(account_number),  -- 이체 상대 계좌 연결
+    FOREIGN KEY (user_id) REFERENCES user(user_id)  -- 사용자 테이블과 연결
+);

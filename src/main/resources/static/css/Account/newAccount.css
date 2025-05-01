@@ -1,0 +1,106 @@
+/* 기본 스타일 */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+}
+
+/* 폼을 감싸는 컨테이너 */
+.container {
+    width: 50%;
+    margin: 50px auto;
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 폼 제목 */
+h2 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* 폼 그룹 (각 항목을 감싸는 div) */
+.form-group {
+    margin-bottom: 20px;
+}
+
+/* 라벨 스타일 */
+label {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+/* 입력 필드 스타일 */
+input[type="text"], 
+input[type="number"], 
+input[type="date"], 
+input[type="password"], 
+select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #f9f9f9;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="password"]:focus,
+select:focus {
+    border-color: #007BFF;
+    background-color: #fff;
+}
+
+/* 체크박스 스타일 */
+input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+/* 버튼 스타일 */
+button {
+    width: 100%;
+    padding: 15px;
+    background-color: #007BFF;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* 기타 옵션 (기타 옵션에 대한 텍스트) */
+label[for="options"] {
+    font-weight: normal;
+    display: block;
+    margin-top: 10px;
+}
+
+/* 선택 박스 스타일 */
+input[type="checkbox"]:not(:last-child) {
+    margin-bottom: 10px;
+}
+
+.checkbox-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.checkbox-container label {
+    margin-right: 10px;
+}

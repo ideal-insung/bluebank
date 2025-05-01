@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="UTF-8">
+	<title>BlueBank</title>
+	<link rel="stylesheet" href="/css/Account/detailAccount.css">
+	<link rel="stylesheet" href="/css/common/otp.css">
+	<script src="/js/common.js"></script>
+	<script src="/js/otp.js"></script>
+</head>
+<script>
+	window.onload = function() {
+		const balance = [[${account.balance}]];
+		const balanceElement = document.getElementById("balance");
+		balanceElement.textContent = "₩ " +formatNumber(balance);
+	}
+
+
+	function openTransferModal() {
+		const balance = [[${account.balance}]];
+		const accountNumber = "[[${account.account_number}]]";
+		document.getElementById("fromAccountDisplay").textContent = formatAccountNumber(accountNumber);
+		document.getElementById("currentBalance").textContent = "₩ " + formatNumber(balance);
+		// 입력값 초기화
+        resetModalInputs("transferModal");  // 공통 초기화 함수 호출
+		document.getElementById("transferModal").style.display = "block";
+	}
+
+	function transaction(type){
+		// ✅ OTP 성공 시 실행할 로직 정의
+		const onOtpSuccess = function () {
+			param = {};
+			const id = [[${account.id}]];
+			const account_number = "[[${account.account_number}]]";
+			param.id = id;
+			param.account_number = account_number;
+			param.type = type;
+			if(type == 'DEPOSIT'){
+				const depositAmount = document.getElementById("depositAmount").value;
+				const depositDescription = document.getElementById("depositDescription").value;
+				param.amount = depositAmount;
+				param.description = depositDescription;
+			}else{
+				const withdrawAmount = document.getElementById("withdrawAmount").value;
+				const withdrawDescription = document.getElementById("withdrawDescription").value;
+				param.amount = withdrawAmount;
+				param.description = withdrawDescription;
+			}
+			postData('/Account/detail/updateBalance', param, transactionCallback);
+		};
+
+
+		openOtpModal(onOtpSuccess);
+		return false;
+	}
+
+	function transactionCallback(data){
+		if(data.status == "success"){
+			alert(data.code+'이 성공적으로 처리되었습니다.');
+			closeModal('depositModal')
+			window.location.reload();  //리로드
+		}else{
+			alert(data.code+"처리에 실패하였습니다.");
+		}
+	}
+
+	function transfer(){
+		const toAccount   = document.getElementById('toAccountInput').value;
+		const fromAccount = "[[${account.account_number}]]";
+		const balance = [[${account.balance}]];
+		const transferAmount = document.getElementById('transferAmount').value;
+		const description = document.getElementById('transferDescription').value;
+
+		if(toAccount == ""){
+			alert("계좌검증 먼저 해주세요.");
+			return false;
+		}
+
+		if (isNaN(transferAmount) || transferAmount <= 0) {
+		    alert("이체 금액을 올바르게 입력해주세요.");
+		    document.getElementById("transferAmount").value = "";
+			return false;
+		}
+
+		if(transferAmount > balance){
+			alert("잔액이 부족합니다.");
+			document.getElementById("transferAmount").value = "";
+			return false;
+		}
+
+        // ✅ OTP 인증 성공 시 실행할 콜백 정의
+		const onOtpSuccess = function () {
+			const param = {
+				toAccount: toAccount,
+				fromAccount: fromAccount,
+				transferAmount: transferAmount,
+				description: description
+			};
+
+			postData('/Account/detail/transfer', param, transferCallback);
+		};
+
+		openOtpModal(onOtpSuccess);
+		return false;
+	}
+
+
+	function transferCallback(response){
+		console.log(response);
+	    if(response.status == "success"){
+			alert(response.message);
+			closeModal('transferModal')
+			window.location.reload();  //리로드
+		}else{
+			alert(response.message);
+		}
+	}
+
+	function verifyAccount(){
+		const account_number = document.getElementById('toAccountInput').value;
+		const withdrawal_account = "[[${account.account_number}]]";
+		if(account_number == ""){
+			alert("계좌를 입력해주세요.");
+			return false;
+		}
+		param = {};
+		param.account_number = account_number;
+		param.withdrawal_account = withdrawal_account
+		getData('/Account/detail/verifyAcc' , param, verifyAccountCallback);
+	}
+
+	function verifyAccountCallback(response){
+		// 콜백 함수로 받은 응답 처리
+		if (response.status === "failure") {
+			alert(response.message);  // 실패 메시지 표시
+			document.getElementById("toAccountInput").value = "";
+		} else if (response.status === "success") {
+			// 성공적으로 계좌가 조회된 경우
+			const account_holder = response.Account.account_holder
+			const isConfirmed = confirm(`계좌번호의 성함은 ${account_holder} 입니다.\n\n입금 계좌가 맞습니까?`);
+			if(isConfirmed){
+			    // 계좌번호 input을 readonly로 설정
+           	    document.getElementById("toAccountInput").readOnly = true;
+                // 검증 버튼 비활성화
+                document.getElementById("verifyAcc").disabled = true;
+			}else{
+				document.getElementById("toAccountInput").value = "";
+			}
+		}
+	}
+</script>
+<body>
+
+<h1>BlueBank</h1>
+
+<div class="balance-box">
+	<h2>현재 잔액</h2>
+	<p id="balance"></p>
+</div>
+
+<div class="form">
+	<button onclick="openModal('depositModal')">입금</button>
+	<button class="withdraw" onclick="openModal('withdrawModal')">출금</button>
+	<button class="transfer" onclick="openTransferModal()">이체</button>
+</div>
+
+<table>
+	<thead>
+	<tr>
+		<th>구분</th>
+		<th>금액</th>
+		<th>사유</th>
+		<th>날짜</th>
+	</tr>
+	</thead>
+	<tbody>
+	<!-- accountHistory 리스트를 반복문으로 출력 -->
+	<tr th:each="history : ${accountHistory}">
+		<td>
+        <span th:switch="${history.transaction_type}">
+            <span th:case="'DEPOSIT'">입금</span>
+            <span th:case="'WITHDRAWAL'">출금</span>
+            <span th:case="'TRANSFER'">이체</span>
+            <span th:case="*">기타</span> <!-- 예외 처리 -->
+        </span>
+		</td> <!-- 거래 유형 -->
+		<td th:text="${history.amount} + '원'"></td> <!-- 금액 (원화 단위) -->
+		<td th:text="${history.description}"></td> <!-- 금액 (원화 단위) -->
+		<td th:text="${#temporals.format(history.transaction_time, 'yyyy/MM/dd')}"></td> <!-- 거래 날짜 -->
+	</tr>
+	</tbody>
+</table>
+<!-- 입금 모달 -->
+<div id="depositModal" class="modal">
+	<div class="modal-content">
+		<span class="close" onclick="closeModal('depositModal')">&times;</span>
+		<h3>입금</h3>
+
+		<label for="depositAmount">입금 금액</label>
+		<input type="number" id="depositAmount" placeholder="금액 입력" required>
+
+		<label for="depositDescription">입금 사유</label>
+		<input type="text" id="depositDescription" placeholder="입금 사유 입력" required>
+		<button onclick="transaction('DEPOSIT')">입금하기</button>
+	</div>
+</div>
+
+<!-- 출금 모달 -->
+<div id="withdrawModal" class="modal">
+	<div class="modal-content">
+		<span class="close" onclick="closeModal('withdrawModal')">&times;</span>
+		<h3>출금</h3>
+
+		<label for="withdrawAmount">출금 금액</label>
+		<input type="number" id="withdrawAmount" placeholder="금액 입력" required>
+
+		<label for="withdrawDescription">출금 사유</label>
+		<input type="text" id="withdrawDescription" placeholder="출금 사유 입력" required>
+		<button onclick="transaction('WITHDRAWAL')">출금하기</button>
+	</div>
+</div>
+
+<!-- 이체 모달 -->
+<div id="transferModal" class="modal">
+	<div class="modal-content">
+		<span class="close" onclick="closeModal('transferModal')">&times;</span>
+		<h3>이체</h3>
+
+		<div>
+			<label>출금 계좌</label>
+			<div id="fromAccountDisplay" style="margin: 5px 0; font-weight: bold; color: #333;">
+				<!-- 출금 계좌 번호 자동 표시 -->
+			</div>
+		</div>
+
+		<div>
+			<label>현재 잔액</label>
+			<div id="currentBalance" style="margin: 5px 0; color: #4CAF50; font-weight: bold;">
+				<!-- 현재 잔액 자동 표시 -->
+			</div>
+		</div>
+
+		<label for="toAccountInput">입금 계좌 번호</label>
+		<input type="text" id="toAccountInput" placeholder="입금 계좌 번호 입력">
+
+		<button onclick="verifyAccount()" id="verifyAcc" style="background-color: #2196F3; margin: 10px 0;">계좌 검증</button>
+
+		<label for="transferAmount">이체 금액</label>
+		<input type="number" id="transferAmount" placeholder="이체 금액 입력" required>
+
+		<label for="transferDescription">이체 사유</label>
+		<input type="text" id="transferDescription" placeholder="이체 사유 입력" required>
+		<button onclick="transfer()">이체하기</button>
+	</div>
+</div>
+<div id="otpModal" class="modal">
+	<div class="modal-content">
+		<span class="close-btn" id="closeOtpModal">&times;</span>
+		<h2>OTP 인증</h2>
+		<p>이체를 완료하려면 OTP를 입력하세요.</p>
+
+		<!-- 타이머 표시 -->
+		<div id="timerDisplay">
+			<p id="timer">남은 시간: <span id="time">05:00</span></p>
+		</div>
+
+		<!-- OTP 숫자 표시 -->
+		<div id="otpNumberContainer">
+			<p>발급된 OTP: <span id="otpNumber">******</span></p>
+		</div>
+
+		<input type="text" id="otpInput" maxlength="6" placeholder="OTP 입력" />
+		<button class="button" id="verifyOtpBtn">OTP 인증</button>
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueBank - 계좌 관리</title>
+    <link rel="stylesheet" href="css/index.css">
+    <script src="/js/common.js"></script>
+</head>
+<body>
+
+<header>
+    <h1>BlueBank 계좌 관리</h1>
+    <p th:text="${user.name} + '님 반갑습니다.'"></p>
+</header>
+
+<script th:inline="javascript">
+    window.onload = function() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            // 토큰이 없으면 로그인 페이지로 리다이렉트
+            window.location.href = '/login';
+        }
+        getAccList();  // 계좌 목록을 가져옵니다.
+    }
+
+    function newAccount(){
+        window.location.href = '/Account/new'; // 로그인 페이지로 이동
+    }
+
+    function getAccListCallback(data){
+        if (data && data.length > 0) {
+            // 계좌 목록이 있으면 화면에 표시
+            displayAccounts(data);
+        } else {
+            alert('계좌 목록이 없습니다.');
+        }
+    }
+
+
+    // 계좌 목록 가져오는 함수
+    function getAccList(){
+        const userId = '[[${user.user_id}]]';  // 타임리프 변수로 사용자 ID 삽입
+        getData('/Account/get', userId , getAccListCallback);
+    }
+
+    // 계좌 목록을 화면에 표시하는 함수
+    function displayAccounts(accounts) {
+        const accountList = document.querySelector('.account-list');
+        accountList.innerHTML = '';  // 기존 리스트를 비웁니다.
+        accounts.forEach(account => {
+            const accountItem = document.createElement('div');
+            accountItem.classList.add('account-item');
+
+            accountItem.innerHTML = `
+                <div>
+                    <h3>계좌 번호: ${account.account_number}</h3>
+                    <p>잔액: ₩ ${formatNumber(account.balance)}</p>
+                </div>
+                <div class="account-actions">
+                    <button onclick="viewAccount(${account.id})">상세보기</button>
+                    <button onclick="deleteAccount(${account.id})" class="delete">삭제</button>
+                </div>
+            `;
+            accountList.appendChild(accountItem);
+        });
+    }
+
+    // 계좌 상세보기 함수 (추가 가능)
+    function viewAccount(accountId) {
+        const form = document.createElement('form');
+        form.method = 'GET';
+        form.action = '/Account/detail'; // 요청 보낼 URL
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'id';
+        input.value = accountId;
+        form.appendChild(input);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    // 계좌 삭제 함수 (추가 가능)
+    function deleteAccount(accountId) {
+        alert('계좌 삭제: ' + accountId);
+    }
+
+</script>
+
+<div class="container">
+    <div class="account-list">
+        <!-- 서버에서 받아온 계좌 목록이 이곳에 동적으로 삽입됩니다. -->
+    </div>
+
+    <div class="add-account">
+        <button onclick="newAccount()">계좌 추가</button>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2025 BlueBank, All Rights Reserved</p>
+</footer>
+
+</body>
+</html>

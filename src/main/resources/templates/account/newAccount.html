@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>계좌 추가</title>
+  <link rel="stylesheet" th:href="@{/css/Account/newAccount.css}">
+  <script src="/js/common.js"></script>
+</head>
+
+<body>
+<div class="container">
+  <h2>계좌 추가</h2>
+  <form action="/Account/new" method="POST">
+    <div class="form-group">
+      <label for="account_name">계좌명</label>
+      <input type="text" id="account_name" name="account_name" placeholder="계좌명을 입력하세요" required>
+    </div>
+    <div class="form-group">
+      <label for="account_type">계좌 유형</label>
+      <select id="account_type" name="account_type" required>
+        <option value="savings">저축 계좌</option>
+        <option value="checking">입출금 계좌</option>
+        <option value="deposit">예금 계좌</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="account_holder">소유자</label>
+        <input type="text" id="account_holder" name="account_holder" placeholder="소유자 이름"
+               th:value="${user != null ? user.name : '기본값'}" readonly class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="passbookYes">통장 발급 여부</label><br>
+        <input type="radio" id="passbookYes" name="passbook_issued" value="yes" required> 예
+        <input type="radio" id="passbookNo" name="passbook_issued" value="no" required> 아니오
+    </div>
+
+    <div class="form-group">
+      <label for="contact">연락처</label>
+      <input type="text" id="contact" name="contact" placeholder="연락처(전화번호 또는 이메일)" required>
+    </div>
+
+    <div class="form-group">
+      <label for="account_password">비밀번호 설정</label>
+      <input type="password" id="account_password" name="account_password" placeholder="계좌 비밀번호" required>
+    </div>
+
+    <div class="form-group">
+      <label for="initial_deposit">초기 예금액</label>
+      <input type="number" id="initial_deposit" name="initial_deposit" placeholder="예금액을 입력하세요" required>
+    </div>
+
+      <div class="form-group">
+          <label>기타 옵션</label><br>
+          <div class="checkbox-container">
+              <label for="auto_transfer">자동이체 설정</label>
+              <input type="checkbox" id="auto_transfer" name="auto_transfer">
+          </div>
+          <div class="checkbox-container">
+              <label for="notification">계좌 알림 설정</label>
+              <input type="checkbox" id="notification" name="notification">
+          </div>
+      </div>
+
+      <div class="form-group" style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+          <button type="submit">계좌 추가</button>
+          <button type="button" onclick="location.href='/'">취소</button>
+      </div>
+  </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BlueBank - 입금/출금/이체</title>
+  <link rel="stylesheet" href="/css/Account/detailAccount.css">
+  <script src="/js/common.js"></script>
+  <style>
+    /* 팝업 배경 스타일 */
+    .modal {
+        display: none; /* 기본적으로 숨김 */
+        position: fixed;
+        z-index: 1; /* 다른 내용 위에 표시 */
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+    }
+
+    /* 팝업 콘텐츠 스타일 */
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 30%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 닫기 버튼 스타일 */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>BlueBank - 입금/출금/이체</h1>
+
+<!-- 잔액 확인 -->
+<div class="balance-box">
+  <h2>현재 잔액</h2>
+  <p id="balance">₩ 0</p> <!-- 잔액은 자바스크립트로 업데이트 -->
+</div>
+
+<!-- 입금 버튼 -->
+<button onclick="openModal('depositModal')">입금</button>
+
+<!-- 출금 버튼 -->
+<button onclick="openModal('withdrawModal')">출금</button>
+
+<!-- 이체 버튼 -->
+<button onclick="openModal('transferModal')">이체</button>
+
+<!-- 거래 내역 -->
+<h3>거래 내역</h3>
+<table>
+  <thead>
+  <tr>
+    <th>구분</th>
+    <th>금액</th>
+    <th>날짜</th>
+  </tr>
+  </thead>
+  <tbody>
+  <!-- 거래 내역이 여기에 추가됩니다 -->
+  </tbody>
+</table>
+
+<!-- 입금 모달 -->
+<div id="depositModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('depositModal')">&times;</span>
+    <h3>입금</h3>
+    <input type="number" id="depositAmount" placeholder="금액 입력" required>
+    <button onclick="deposit()">입금</button>
+  </div>
+</div>
+
+<!-- 출금 모달 -->
+<div id="withdrawModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('withdrawModal')">&times;</span>
+    <h3>출금</h3>
+    <input type="number" id="withdrawAmount" placeholder="금액 입력" required>
+    <button onclick="withdraw()">출금</button>
+  </div>
+</div>
+
+<!-- 이체 모달 -->
+<div id="transferModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('transferModal')">&times;</span>
+    <h3>이체</h3>
+    <label for="fromAccount">출금 계좌</label>
+    <select id="fromAccount">
+      <option value="1">계좌 1</option>
+      <option value="2">계좌 2</option>
+      <option value="3">계좌 3</option>
+    </select>
+
+    <label for="toAccount">입금 계좌</label>
+    <select id="toAccount">
+      <option value="1">계좌 1</option>
+      <option value="2">계좌 2</option>
+      <option value="3">계좌 3</option>
+    </select>
+
+    <input type="number" id="transferAmount" placeholder="이체 금액" required>
+    <button onclick="transfer()">이체</button>
+  </div>
+</div>
+
+<script>
+  let balance = 0; // 초기 잔액 설정
+
+  // 입금 함수
+  function deposit() {
+      const amount = parseFloat(document.getElementById("depositAmount").value);
+      if (isNaN(amount) || amount <= 0) {
+          alert("유효한 금액을 입력해주세요.");
+          return;
+      }
+      balance += amount;
+      updateBalance();
+      addTransaction("입금", amount);
+      closeModal('depositModal');
+  }
+
+  // 출금 함수
+  function withdraw() {
+      const amount = parseFloat(document.getElementById("withdrawAmount").value);
+      if (isNaN(amount) || amount <= 0) {
+          alert("유효한 금액을 입력해주세요.");
+          return;
+      }
+      if (amount > balance) {
+          alert("잔액이 부족합니다.");
+          return;
+      }
+      balance -= amount;
+      updateBalance();
+      addTransaction("출금", amount);
+      closeModal('withdrawModal');
+  }
+
+  // 이체 함수
+  function transfer() {
+      const fromAccount = document.getElementById("fromAccount").value;
+      const toAccount = document.getElementById("toAccount").value;
+      const amount = parseFloat(document.getElementById("transferAmount").value);
+
+      if (isNaN(amount) || amount <= 0) {
+          alert("유효한 금액을 입력해주세요.");
+          return;
+      }
+
+      if (amount > balance) {
+          alert("잔액이 부족합니다.");
+          return;
+      }
+
+      balance -= amount;
+      updateBalance();
+      addTransaction("이체 출금", amount, fromAccount);
+      addTransaction("이체 입금", amount, toAccount);
+      closeModal('transferModal');
+  }
+
+  // 잔액 업데이트
+  function updateBalance() {
+      document.getElementById("balance").textContent = "₩ " + formatNumber(balance);
+  }
+
+  // 거래 내역 추가
+  function addTransaction(type, amount, account = "") {
+      const tableBody = document.querySelector("tbody");
+      const row = document.createElement("tr");
+      const date = new Date().toLocaleString();
+
+      row.innerHTML = `
+          <td>${type} ${account ? '(계좌 ' + account + ')' : ''}</td>
+          <td>₩ ${formatNumber(amount)}</td>
+          <td>${date}</td>
+      `;
+      tableBody.appendChild(row);
+  }
+
+  // 숫자 포맷 함수
+  function formatNumber(number) {
+      return number.toLocaleString();
+  }
+
+  // 모달 열기
+  function openModal(modalId) {
+      document.getElementById(modalId).style.display = "block";
+  }
+
+  // 모달 닫기
+  function closeModal(modalId) {
+      document.getElementById(modalId).style.display = "none";
+  }
+
+  // 모달 외부 클릭 시 닫기
+  window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+          closeModal(event.target.id);
+      }
+  }
+
+</script>
+
+</body>
+</html>

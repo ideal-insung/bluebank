@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>회원가입</title>
+  <link rel="stylesheet" href="/css/User/register.css">
+  <script src="/js/common.js"></script>
+</head>
+<body>
+
+<div class="signup-box">
+  <h2>BlueBank 회원가입</h2>
+  <input type="text" id="email" placeholder="이메일">
+  <input type="text" id="name" placeholder="이름">
+  <input type="password" id="password" placeholder="비밀번호">
+  <input type="password" id="confirmPassword" placeholder="비밀번호 확인">
+  <input type="text" id="phoneNumber" placeholder="전화번호">
+  <button onclick="signup()">가입하기</button>
+  <div class="footer">
+    이미 계정이 있으신가요? <a href="/User/login">로그인</a>
+  </div>
+</div>
+
+<script>
+function signup() {
+    const email = document.getElementById('email').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const confirm = document.getElementById('confirmPassword').value.trim();
+    const phone = document.getElementById('phoneNumber').value.trim();
+
+    if (!validateEmail(email)) {
+        alert("이메일을 확인해주세요.");
+        return;
+    }
+
+    if (!name) {
+        alert("이름을 입력해주세요.");
+        return;
+    }
+
+    if (!password || !confirm) {
+        alert("비밀번호를 제대로 입력해주세요.");
+        return;
+    }
+
+    if (password !== confirm) {
+        alert("비밀번호가 일치하지 않습니다.");
+        return;
+    }
+
+    if (!validatePhoneNumber(phone)) {
+        alert("휴대폰번호를 제대로 입력해주세요.");
+        return;
+    }
+
+    const param = {
+        name: name, // 아이디
+        password: password,  // 비밀번호
+        phone:phone,
+        email:email
+    };
+
+    // 회원가입 API 호출
+    postData('/User/register' , param , registerCallback)
+}
+function registerCallback(data){
+    if (data.success) {
+      // 회원가입 성공 시
+      alert('회원가입이 완료되었습니다!');
+      window.location.href = '/User/login'; // 로그인 페이지로 이동
+    } else {
+      // 회원가입 실패 시
+      alert('회원가입 실패: ' + data.message);
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="bank.core.User.UserRepository.UserDAO">
+
+    <select id="findByEmail" resultType="bank.core.domain.User">
+        SELECT user_id, name, email, phone, password, created_at
+        FROM user WHERE email = #{email}
+    </select>
+
+    <insert id="insertUser">
+        INSERT INTO user (name, password, phone, email)
+        VALUES (#{name}, #{password}, #{phone}, #{email})
+    </insert>
+
+</mapper>
