@@ -18,6 +18,7 @@ import java.util.Random;
 @RequestMapping("/OTP")
 public class OTPController {
 
+    // OTP 생성
     @PostMapping("/generate")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> generateOtp(HttpSession httpSession) {
@@ -37,6 +38,7 @@ public class OTPController {
         return ResponseEntity.ok(response);
     }
 
+    // OTP 인증
     @PostMapping("/verify_otp")
     public ResponseEntity<Map<String, Object>> verifyOtp(@RequestBody Map<String, String> payload, HttpSession session) {
         String enteredOtp = payload.get("otp");

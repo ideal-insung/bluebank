@@ -151,8 +151,13 @@
 </script>
 <body>
 
-<h1>BlueBank</h1>
-
+<div style="display: flex; justify-content: space-between; align-items: center;">
+	<h1 style="flex-grow: 1; text-align: center;">BlueBank</h1>
+	<!-- 홈으로 가는 버튼 추가 -->
+	<button onclick="window.location.href='/';" style="padding: 5px 15px; font-size: 13px; background-color: #2196F3; color: white; border: none; border-radius: 5px;">
+		홈으로
+	</button>
+</div>
 <div class="balance-box">
 	<h2>현재 잔액</h2>
 	<p id="balance"></p>
