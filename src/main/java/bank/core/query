@@ -38,3 +38,7 @@ CREATE TABLE account_history (
     FOREIGN KEY (target_account_number) REFERENCES account(account_number),  -- 이체 상대 계좌 연결
     FOREIGN KEY (user_id) REFERENCES user(user_id)  -- 사용자 테이블과 연결
 );
+
+ALTER TABLE account
+ADD COLUMN deleted BOOLEAN DEFAULT FALSE COMMENT '삭제 여부',
+ADD COLUMN deleted_at DATETIME DEFAULT NULL COMMENT '삭제 일시';

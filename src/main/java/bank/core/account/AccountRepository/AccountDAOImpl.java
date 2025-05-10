@@ -66,4 +66,20 @@ public class AccountDAOImpl implements AccountDAO{
     public Account getAccountByAccNumber(Map<String, Object> map) {
         return sqlSession.selectOne(NAME_SPACE + "selectByAccNumber", map);
     }
+
+    /**
+     * userId를 기반으로 계좌의 수를 조회합니다.
+     * @param userId 계좌의 총개수 (userId)
+     * @return 조회된 Account 객체의 수
+     */
+    @Override
+    public int getAccountAllCnt(Long userId) {
+        return sqlSession.selectOne(NAME_SPACE + "selectByIdAllCnt", userId);
+    }
+
+    @Override
+    public boolean deleteAccount(Long id) {
+        int rowsDelete =  sqlSession.update(NAME_SPACE + "deleteAccount",id);
+        return rowsDelete > 0;
+    }
 }

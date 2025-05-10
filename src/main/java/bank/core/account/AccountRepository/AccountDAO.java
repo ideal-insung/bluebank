@@ -22,4 +22,9 @@ public interface AccountDAO {
 
     //계좌 번호를 기반으로 특정 계좌를 조회합니다.
     Account getAccountByAccNumber(Map<String,Object> map);
+
+    //특정 사용자의 모든 계좌 수를 조회
+    int getAccountAllCnt(Long userId);
+
+    boolean deleteAccount(Long id);
 }

@@ -38,14 +38,25 @@
     </insert>
 
     <select id="selectById" resultType="bank.core.domain.Account" parameterType="Long">
-        SELECT * FROM ACCOUNT WHERE USER_ID = #{USER_ID};
+        SELECT *
+          FROM ACCOUNT
+         WHERE USER_ID = #{USER_ID}
+           AND DELETED = 0;
+    </select>
+
+    <select id="selectByIdAllCnt" resultType="int" parameterType="Long">
+        SELECT COUNT(*)
+          FROM ACCOUNT
+         WHERE USER_ID = #{USER_ID}
+           AND DELETED = 0
     </select>
 
     <select id="selectAccountById" resultType="bank.core.domain.Account" parameterType="map">
         SELECT *
           FROM ACCOUNT
          WHERE ID = #{id}
-           AND USER_ID = #{user_id};
+           AND USER_ID = #{user_id}
+           AND DELETED = 0;
     </select>
 
     <update id="updateBalance" parameterType="map">
@@ -60,5 +71,12 @@
           FROM ACCOUNT
          WHERE RIGHT(ACCOUNT_NUMBER, 10) = #{account_number}
     </select>
+
+    <update id="deleteAccount" parameterType="Long">
+        UPDATE account
+        SET DELETED = 1
+          , DELETED_AT = NOW()
+        WHERE ID = #{id}
+    </update>
 
 </mapper>

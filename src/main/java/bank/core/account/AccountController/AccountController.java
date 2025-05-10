@@ -70,7 +70,7 @@ public class AccountController {
      */
     @GetMapping("/get")
     @ResponseBody
-    public List<Account> getAccount(HttpSession httpSession) {
+    public Map<String, Object> getAccount(HttpSession httpSession) {
         User user = (User) httpSession.getAttribute("user");
         if (user == null) {
             throw new IllegalStateException("로그인이 필요합니다.");
@@ -107,6 +107,48 @@ public class AccountController {
     }
 
     /**
+     * 특정 계좌를 삭제합니다.
+     * @param transferInfo 삭제할 기본정보
+     * @param httpSession 현재 세션 정보
+     * @param model 조회한 계좌 정보와 거래 내역을 담을 모델
+     * @return 특정 계좌를 삭제
+     */
+    @PostMapping("/delete")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> deleteAccount(@RequestBody Map<String, Object> transferInfo, HttpSession httpSession, Model model) {
+        User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "failure");
+            response.put("message", "사용자 세션이 만료되었습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);  // HTTP 401 Unauthorized
+        }
+
+        transferInfo.put("user_id", user.getUser_id());  // 로그인한 사용자의 ID를 이체 정보에 추가
+        boolean result = accountService.transfer(transferInfo);  // 이체 처리
+        Map<String, Object> response = new HashMap<>();
+        if (result) {
+            // 이체 후 계좌 상태를 '삭제됨'으로 업데이트
+            boolean deleteResult = accountService.markAccountAsDeleted(transferInfo);
+
+            if (deleteResult) {
+                response.put("status", "success");
+                response.put("message", "이체가 성공적으로 처리되었고 계좌가 삭제되었습니다.");
+                return ResponseEntity.ok(response);  // HTTP 200 OK
+            } else {
+                response.put("status", "failure");
+                response.put("message", "계좌 삭제 처리에 실패했습니다.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);  // HTTP 500 Internal Server Error
+            }
+        } else {
+            response.put("status", "failure");
+            response.put("message", "이체 처리에 실패했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);  // HTTP 500 Internal Server Error
+        }
+
+    }
+
+    /**
      * 계좌 잔액을 업데이트하는 메서드 (입금/출금).
      *
      * @param updateInfo 잔액을 업데이트할 정보가 담긴 Map (입금/출금 유형 및 금액 포함)
@@ -117,6 +159,12 @@ public class AccountController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> updateBalance(@RequestBody Map<String, Object> updateInfo, HttpSession httpSession) {
         User user = (User) httpSession.getAttribute("user");
+        if (user == null) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "failure");
+            response.put("message", "사용자 세션이 만료되었습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);  // HTTP 401 Unauthorized
+        }
         Long user_id = user.getUser_id();
         updateInfo.put("user_id", user_id);
         String type = (String) updateInfo.get("type");

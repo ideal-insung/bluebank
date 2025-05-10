@@ -98,8 +98,15 @@ public class AccountService {
      * @param userId 사용자 ID
      * @return 해당 사용자의 계좌 목록
      */
-    public List<Account> getAccounts(Long userId) {
-        return accountDAO.getAccounts(userId);
+    public Map<String, Object> getAccounts(Long userId) {
+        List<Account> accounts = accountDAO.getAccounts(userId);
+        int totalCount = accountDAO.getAccountAllCnt(userId);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("accounts", accounts);
+        response.put("totalCount", totalCount);
+
+        return response;
     }
 
     /**
@@ -217,6 +224,8 @@ public class AccountService {
         fromMap.put("id", fromAccount.getId());
         fromMap.put("target_account_number", toAccount.getAccount_number());
         fromMap.put("description", transferInfo.get("description"));
+        fromMap.put("account_number", fromAccount.getAccount_number());
+        System.out.println("fromMap = " + fromMap);
         boolean withdrawal = this.updateBalance(fromMap);
         if (!withdrawal) {
             throw new TransferException("출금 처리에 실패했습니다.");
@@ -236,5 +245,17 @@ public class AccountService {
         }
 
         return true;
+    }
+
+    @Transactional
+    public boolean markAccountAsDeleted(Map<String, Object> transferInfo) {
+        // 삭제할 계좌 객체 생성
+        Map<String, Object> deleteMap = new HashMap<>();
+        deleteMap.put("account_number", StringUtils.extractDigits((String) transferInfo.get("fromAccount")));
+        Account account = accountDAO.getAccountByAccNumber(deleteMap);
+        if (account == null) {
+            throw new AccountNotFoundException("출금 계좌를 찾을 수 없습니다.");
+        }
+        return accountDAO.deleteAccount(account.getId());
     }
 }
