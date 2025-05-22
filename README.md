@@ -68,8 +68,6 @@ bluebank/
 ## 🧑‍💻 개발자
 
 - **황인성 (Insung Hwang)**  
-  금융 SI 경력 기반으로 실무에 가까운 로직을 구현한 개인 프로젝트입니다.
-
 - 블로그: [https://ideal823.tistory.com](https://ideal823.tistory.com)  
 - GitHub: [https://github.com/ideal-insung](https://github.com/ideal-insung)
 
