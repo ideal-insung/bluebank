@@ -39,7 +39,7 @@ Java 기반의 간단한 금융 서비스 웹 애플리케이션입니다.
 
 | 분류      | 기술 |
 |-----------|------|
-| Language  | Java 11 |
+| Language  | Java 17 |
 | Framework | Spring, Spring MVC, MyBatis |
 | View      | Thymeleaf, HTML/CSS, JavaScript,|
 | DB        | MySQL |
